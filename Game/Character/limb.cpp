@@ -24,7 +24,7 @@ Limb::Limb(int IHP, std::string newName) : hp(IHP), maxHp(IHP), limbName(newName
         this->limbHitChance = 0.2;
         break;
     case eTorso:
-        this->limbHitChance = 0.9;
+        this->limbHitChance = 0.95;
         break;
     case eRArm:
         this->limbHitChance = 0.7;
@@ -56,9 +56,13 @@ limbType Limb::hashit(std::string const& inString){
     if(inString == "Left Arm") {return eLArm;}
     if(inString == "Left Leg") {return eLLeg;}
     if(inString == "Right Leg") {return eRLeg;}
+    else {return eHead;}
 }
 
 bool Limb::getState(){
+    if (hp <= 0){
+        this->state = false;
+    }
     return state;
 }
 

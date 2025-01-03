@@ -2,15 +2,14 @@
 
 Party::Party(){
     initParty();
-    this->numMembers = 4;
+    this->numMembers = members.size();
 }
 
 void Party::initParty(){
-    members = new Character[4];
-    members[0] = Character("Syvis",1);
-    members[1] = Character("Hikari",2);
-    members[2] = Character("Nomu",3);
-    members[3] = Character("Yharb",4);
+    members.push_back(new Character("Syvis",1));
+    members.push_back(new Character("Hikari",2));
+    members.push_back(new Character("Nomu",3));
+    members.push_back(new Character("Yharb",4));
 }
 
 Party::~Party(){}
@@ -21,7 +20,7 @@ int Party::get_numMembers(){
 
 bool Party::partyUpdate(){
     for (int i = 0; i < numMembers; i++){
-        if (members[i].get_isAlive() == true){ //if there is a party member alive
+        if (members[i]->get_isAlive() == true){ //if there is a party member alive
             return true; //party is still active
         }
     }

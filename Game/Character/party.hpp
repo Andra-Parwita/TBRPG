@@ -12,12 +12,11 @@ private:
     void initParty();
     bool partyStatus;
 public:
-    Character* members;
+    std::vector<Character*> members;
     Party();
     ~Party();
 
     bool partyUpdate(); //checks status of party
-
     int get_numMembers();
 };
 

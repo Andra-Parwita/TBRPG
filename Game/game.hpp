@@ -8,6 +8,7 @@
 
 #include "player.hpp"
 #include "battleManager.hpp"
+#include "UiManager.hpp"
 
 class Game {
     private:
@@ -21,37 +22,16 @@ class Game {
         //player
         Player player;
 
-        //battleManager
+        //Managers
         BattleManager* battleManager;
+        UiManager* uiManager;
 
-        sf::Sprite SamuraiDisp;
-
-        //MenuTypes
-        sf::Sprite MenuLeft; //default menu
-        sf::Sprite MenuRight;
-        sf::Text* CharStatsText;
-
-        sf::Sprite* MainSelectMenu; //Action combat menu
         bool MainSelectMenuBool;
-        sf::Text* MainSelectText;
-
-        sf::Sprite* EnemySelectMenu; //Limb Selection Menu
         bool EnemySelectMenuBool;
-
-        sf::Sprite* EnemyLimbSelectMenu; //Limb Selection Menu
         bool EnemyLimbSelectMenuBool;
-
-        sf::Sprite* SkillSelectMenu; //Skill Selection menu
         bool SkillSelectMenuBool;
-        sf::Text* SkillSelectText;
-
-         sf::Sprite* ItemSelectMenu; //Item Selection Menu
         bool ItemSelectMenuBool;
-        sf::Text* ItemSelectText;
-
         bool FleeBool; //if fleeing or not
-
-        bool GuardBool; //if guarding or not
 
         //current Selection
         int currentSelectionId; //switching between selection options
@@ -65,7 +45,6 @@ class Game {
 
         //sprites and textures
         sf::Texture squareTex; //default square tex
-        sf::Texture SamuraiTex; //char text 2
         sf::Font gameFont; //game font
 
         sf::Text* CharNames; //list of character names
@@ -86,6 +65,8 @@ class Game {
 
         // Functions
         void pollEvents();
+        void inBattleEvents();
+
         void update();
         void render();
 };

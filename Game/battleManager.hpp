@@ -2,9 +2,10 @@
 #define BATTLEMANAGER_HPP
 
 #include "player.hpp"
-#include "character.hpp"
+#include "Character/character.hpp"
 #include <vector>
-#include "enemy.hpp"
+#include "Character/enemy.hpp"
+#include "Character/enemyClasses/skeleton.hpp"
 #include <iostream>
 #include <string>
 #include <time.h>
@@ -16,14 +17,10 @@ private:
     Player* player;
     Enemy* enemies;
 
-    std::vector<Enemy*> EnemyList;
-
     int turnNumber; //current turn number
     int totalTurns; //max turns before reset
     bool hasActionTaken; //if the action has been taken
     bool playerTurn; //if it is player's turn
-    int activeCharId;
-    std::vector<Character*> battleParticipants;
 
     int chosenEnemy;
     bool battleStatus; //checking if battle continues or not
@@ -32,6 +29,8 @@ private:
     int skillPoints; //number of skill points
 
 public:
+    std::vector<Character*> battleParticipants;
+    std::vector<Enemy*> EnemyList;
     BattleManager(Player*);
     BattleManager();
     ~BattleManager();
@@ -42,15 +41,20 @@ public:
     void enemySpawner();
     void enemyAttackChoice(int,int);
     void removeDeadEnemies();
+    void enemyTurn();
+
     void attackHitCalc(float, int);
+    void set_battleStatus(bool);
+
+    void removeDeadChars();
 
 
     int check_Turns();
-    int get_TotalHealth(int);
     bool update_Status();
     int get_numOfEnemies();
     int get_numOfLimbs(int);
     bool get_playerTurn();
+    bool get_battleStatus();
 };
 
 

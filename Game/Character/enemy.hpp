@@ -8,8 +8,9 @@
 
 class Enemy : public Character
 {
-private:
+protected:
     int enemyId;
+    std::string expectedFileSize;
 
 public:
     int limbNo;
@@ -19,6 +20,7 @@ public:
 
     int get_enemyId();
     int get_limbNo();
+    std::string get_expectedFileSize();
 
     void set_enemyId(int);
 

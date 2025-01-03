@@ -5,6 +5,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include "characterSpriteLoader.hpp"
 
 class Character 
 {
@@ -29,6 +30,7 @@ protected:
 
     //debuff checks for damaged body
     bool headEffect;
+    bool headExposed;
     bool bothArmEffect;
     bool armEffect;
     bool LlegEffect;
@@ -36,7 +38,7 @@ protected:
 
 public:
     std::vector<Limb*> limbs; //limbs of character
-
+    characterSpriteLoader* sprite;
     //getters
 
     int get_MaxHp();
@@ -44,6 +46,7 @@ public:
     int get_Level();
     int get_speed();
     int get_classType();
+    int get_limbMaxHP(int);
     int get_limbHP(int);
     bool get_isAlive();
     bool get_currentTurn();

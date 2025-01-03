@@ -18,6 +18,7 @@ Character::Character(std::string Iname, int IclassType) : name(Iname){ //input c
     this->currentTurn = false;
     this->atkAccuracy = 1;
     this->baseDmg = 5;
+    sprite = new characterSpriteLoader(this->name);
     charInit(IclassType);
 }
 
@@ -28,7 +29,7 @@ void Character::charInit(int classType){//initalise the character
     case 0: //N/A
         this->speed = 0;
         break;
-    case 1: //Knight
+    case 1: //knight
         this->speed = 10;
         break;
     case 2: //samurai
@@ -45,7 +46,7 @@ void Character::charInit(int classType){//initalise the character
         break;
     }
     //setting limb HP
-    limbs.push_back(new Limb(10, "Head")); //0
+    limbs.push_back(new Limb(15, "Head")); //0
     limbs.push_back(new Limb(50, "Torso")); //1
     limbs.push_back(new Limb(20, "Right Arm")); //2
     limbs.push_back(new Limb(20, "Left Arm")); //3
@@ -80,6 +81,14 @@ int Character::get_limbHP(int i){
     return -1;
 }
 
+int Character::get_limbMaxHP(int i){
+    if ((i >= 0) && (i < limbs.size())){
+        return limbs[i]->getMaxHp();
+    }
+    std::cout << "Error getting Hp id" << std::endl;
+    return -1;
+}
+
 int Character::get_Hp(){
     int temp = 0;
     for (int i = 0; i < limbs.size(); i++){
@@ -105,8 +114,7 @@ std::string Character::get_name(){
 }
 
 bool Character::get_isAlive(){
-    if ((currentHp <= maxHp*0.35) || (limbs[0]->get_limbName() == "Head" && limbs[0]->getHp() <= 0) || (limbs[1]->get_limbName() == "Torso" && limbs[1]->getHp() <= 0)){
-        std::cout << name << ": Has Died! \n" << std::endl;
+    if ((currentHp <= maxHp*0.4) || (limbs[0]->get_limbName() == "Head" && limbs[0]->getHp() <= 0) || (limbs[1]->get_limbName() == "Torso" && limbs[1]->getHp() <= 0)){
         isAlive = false;
     }
     return this->isAlive;
@@ -181,11 +189,21 @@ void Character::update_limbAccuracy(){
                 currentLimb->setLimbHitChance(0.4);
                 std::cout << name << ": Head Weakness! \n" << std::endl;
                 headEffect = true;
+            } else if (!(limbs[4]->getState()) && !(limbs[5]->getState()) && !(headExposed)){
+                currentLimb->setLimbHitChance(0.9);
+                std::cout << name << ": Head Exposed! \n" << std::endl;
+                headExposed = true;
             } else if (!(headEffect)){
                 headEffect = false;
+            } if (currentLimb->getHp() <= 0){
+                this->isAlive = false; //kills if head is dead
+                break;
             }
         } if (currentLimb->get_limbName() == "Torso"){
-            //torso debuffs
+            if (currentLimb->getHp() <= 0){
+                this->isAlive = false; //kills if torso is dead
+                break;
+            }
         } if ((currentLimb->get_limbName() == "Right Arm") || (currentLimb->get_limbName() == "Left Arm")){
             if ((limbs[2]->getHp() <= limbs[2]->getMaxHp()/2) && (limbs[3]->getHp() <= limbs[3]->getMaxHp()/2) && !(bothArmEffect)){
                 atkAccuracy = atkAccuracy * 0.5;
@@ -226,6 +244,7 @@ void Character::reset_limbDebuff(){
     armEffect = false;
     LlegEffect = false;
     RlegEffect = false;
+    headExposed = false;
 }
 
 

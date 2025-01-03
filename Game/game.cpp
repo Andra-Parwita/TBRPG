@@ -16,6 +16,10 @@ void Game::initVariables(){ // initalises variables
     EnemySelectMenuBool = false;
 
     battleManager = new BattleManager(&player);
+    uiManager = new UiManager(&player.party);
+    uiManager->load_BattleManager(battleManager);
+
+    uiManager->InitBattleMenu();
 }  
 
 void Game::initWindow(){ // starts the window
@@ -34,35 +38,6 @@ void Game::initSprites(){
         std::cout << "Cannot load Square Tex" << std::endl;
     }
 
-    MenuLeft.setTexture(squareTex);
-    MenuLeft.setColor(sf::Color(25,25,25,125));
-    MenuLeft.setScale(sf::Vector2f(2.5f,3.0f));
-    MenuLeft.setPosition(sf::Vector2f(0.f,730.f));
-
-    MenuRight.setTexture(squareTex);
-    MenuRight.setColor(sf::Color(25,25,25,125));
-    MenuRight.setScale(sf::Vector2f(7.0f,3.0f));
-    MenuRight.setPosition(sf::Vector2f(500.f,730.f));
-
-    MainSelectMenu = new sf::Sprite[4];
-    for (int i = 0; i < 4; i++){
-        MainSelectMenu[i].setTexture(squareTex);
-        MainSelectMenu[i].setColor(sf::Color::White);
-        MainSelectMenu[i].setScale(sf::Vector2f(0.5f,0.5f));
-    }
-    MainSelectMenu[0].setPosition(sf::Vector2f(50.f,850.f));
-    MainSelectMenu[1].setPosition(sf::Vector2f(150.f,750.f));
-    MainSelectMenu[2].setPosition(sf::Vector2f(250.f,850.f));
-    MainSelectMenu[3].setPosition(sf::Vector2f(150.f,950.f));
-
-    if (!SamuraiTex.loadFromFile("./Sprites/Hikari.png")){
-        std::cout << "Cannot load Samurai Tex" << std::endl;
-    }
-
-    SamuraiDisp.setTexture(SamuraiTex);
-    SamuraiDisp.setPosition(sf::Vector2f(850.f,730.f));
-    SamuraiDisp.setScale(sf::Vector2f(5.f,5.f));
-
 }
 
 //Game constructors
@@ -79,10 +54,130 @@ Game::~Game(){
 }
 
 //looping
-
-
 const bool Game::getWindowIsOpen() const {
     return this->window->isOpen();
+}
+
+void Game::inBattleEvents(){ //battle controls
+    battleManager->update_Status();                     //might be slow, due to constant checks
+    if (battleManager->get_playerTurn()) {
+        if(this->ev.type == sf::Event::KeyPressed){
+            if ((ev.key.scancode == sf::Keyboard::Scan::Left) || (ev.key.scancode == sf::Keyboard::Scan::A)) {
+                if (MainSelectMenuBool){ //main
+                    this->currentSelectionId = 1;
+                    std::cout << "chose ID: " << currentSelectionId << std::endl;
+                } if (EnemySelectMenuBool){ //enemy
+                    this->currentSelectedEnemy--;
+                    if (currentSelectedEnemy < 0){
+                        currentSelectedEnemy = battleManager->get_numOfEnemies()-1;
+                    }
+                    std::cout << "Current Enemy chosen: " << currentSelectedEnemy << std::endl;
+
+                } if (EnemyLimbSelectMenuBool){ // enemy limb
+                    this->currentSelectedELimb--;
+                    if (currentSelectedELimb < 0){
+                        currentSelectedELimb = battleManager->get_numOfLimbs(confirmedSelectedEnemy)-1;
+                    }
+                    std::cout << "Current limb chosen: " << currentSelectedELimb << std::endl;
+                }
+
+            } else if ((ev.key.scancode == sf::Keyboard::Scan::Right) || (ev.key.scancode == sf::Keyboard::Scan::D)) {
+                if (MainSelectMenuBool){ //main
+                    this->currentSelectionId = 3;
+                    std::cout << "chose ID: " << currentSelectionId << std::endl;
+                } if (EnemySelectMenuBool){ //enemy
+                    this->currentSelectedEnemy++;
+                    if (currentSelectedEnemy > battleManager->get_numOfEnemies()-1){
+                        currentSelectedEnemy = 0;
+                    }
+                    std::cout << "Current Enemy chosen: " << currentSelectedEnemy << std::endl;
+
+                } if (EnemyLimbSelectMenuBool){ // enemy limb
+                    this->currentSelectedELimb++;
+                    if (currentSelectedELimb > battleManager->get_numOfLimbs(confirmedSelectedEnemy)-1){
+                        currentSelectedELimb = 0;
+                    }
+                    std::cout << "Current limb chosen: " << currentSelectedELimb << std::endl;
+                }
+
+            } else if ((ev.key.scancode == sf::Keyboard::Scan::Up) || (ev.key.scancode == sf::Keyboard::Scan::W)) {
+                if (MainSelectMenuBool){
+                    this->currentSelectionId = 2;
+                    std::cout << "chose ID: " << currentSelectionId << std::endl;
+                } if (EnemyLimbSelectMenuBool){ // enemy limb
+                    switch (currentSelectedELimb)
+                    {
+                    case 0:
+                        currentSelectedELimb = 4;
+                        break;
+                    case 1:
+                    case 2:
+                    case 3:
+                        currentSelectedELimb = 0;
+                        break;
+                    case 4:
+                        currentSelectedELimb = 2;
+                        break;
+                    case 5:
+                        currentSelectedELimb = 3;
+                        break;
+                    default:
+                        break;
+                    }
+                    std::cout << "Current limb chosen: " << currentSelectedELimb << std::endl;
+                }
+            } else if ((ev.key.scancode == sf::Keyboard::Scan::Down) || (ev.key.scancode == sf::Keyboard::Scan::S)) {
+                if (MainSelectMenuBool){
+                    this->currentSelectionId = 4;
+                    std::cout << "chose ID: " << currentSelectionId << std::endl;
+                } if (EnemyLimbSelectMenuBool){ // enemy limb
+                    switch (currentSelectedELimb)
+                    {
+                    case 0:
+                        currentSelectedELimb = 1;
+                        break;
+                    case 1:
+                    case 2:
+                        currentSelectedELimb = 4;
+                        break;
+                    case 3:
+                        currentSelectedELimb = 5;
+                        break;
+                    case 4:
+                    case 5:
+                        currentSelectedELimb = 0;
+                        break;
+                    default:
+                        break;
+                    }
+                    std::cout << "Current limb chosen: " << currentSelectedELimb << std::endl;
+                }
+            }
+
+            if (ev.key.scancode == sf::Keyboard::Scan::Enter) {
+                if (MainSelectMenuBool){
+                    confirmedSelection = currentSelectionId;
+                    std::cout << "Confimed ID: " << confirmedSelection << " from: " << currentSelectionId << std::endl;
+                } if (EnemySelectMenuBool){
+                    confirmedSelectedEnemy = currentSelectedEnemy;
+                    confirmedSelection = 5;
+                    std::cout << "Confimed ID: " << confirmedSelectedEnemy << " from: " << currentSelectedEnemy << std::endl;
+                } if (EnemyLimbSelectMenuBool){
+                    confirmedSelectedElimb = currentSelectedELimb;
+                    battleManager->enemyAttackChoice(confirmedSelectedEnemy, confirmedSelectedElimb);
+                    confirmedSelection = 0;
+                }
+            }
+
+            if (ev.key.scancode == sf::Keyboard::Scan::Backspace) {
+                confirmedSelection = 0;
+                std::cout << "Back" << std::endl;
+            }
+        }
+    } else {
+        battleManager->update_Status();
+    }
+
 }
 
 
@@ -93,192 +188,66 @@ void Game::pollEvents(){
         if (this->ev.type == sf::Event::Closed){ //close window button
             this->window->close();
         }
+
+        //battle controls
         if (inBattle) {
-            if (battleManager->get_playerTurn()) {
-                if(this->ev.type == sf::Event::KeyPressed){
-                    if ((ev.key.scancode == sf::Keyboard::Scan::Left) || (ev.key.scancode == sf::Keyboard::Scan::A)) {
-                        if (MainSelectMenuBool){ //main
-                            this->currentSelectionId = 1;
-                            this->MainSelectMenu[currentSelectionId-1].setColor(sf::Color::Cyan);
-                            std::cout << "chose ID: " << currentSelectionId << std::endl;
-                        } if (EnemySelectMenuBool){ //enemy
-                            this->currentSelectedEnemy--;
-                            if (currentSelectedEnemy < 0){
-                                currentSelectedEnemy = battleManager->get_numOfEnemies()-1;
-                            }
-                            std::cout << "Current Enemy chosen: " << currentSelectedEnemy << std::endl;
-
-                        } if (EnemyLimbSelectMenuBool){ // enemy limb
-                            this->currentSelectedELimb--;
-                            if (currentSelectedELimb < 0){
-                                currentSelectedELimb = battleManager->get_numOfLimbs(confirmedSelectedEnemy)-1;
-                            }
-                            std::cout << "Current limb chosen: " << currentSelectedELimb << std::endl;
-                        }
-
-                    } else if ((ev.key.scancode == sf::Keyboard::Scan::Right) || (ev.key.scancode == sf::Keyboard::Scan::D)) {
-                        if (MainSelectMenuBool){ //main
-                            this->currentSelectionId = 3;
-                            this->MainSelectMenu[currentSelectionId-1].setColor(sf::Color::Cyan);
-                            std::cout << "chose ID: " << currentSelectionId << std::endl;
-                        } if (EnemySelectMenuBool){ //enemy
-                            this->currentSelectedEnemy++;
-                            if (currentSelectedEnemy > battleManager->get_numOfEnemies()-1){
-                                currentSelectedEnemy = 0;
-                            }
-                            std::cout << "Current Enemy chosen: " << currentSelectedEnemy << std::endl;
-
-                        } if (EnemyLimbSelectMenuBool){ // enemy limb
-                            this->currentSelectedELimb++;
-                            if (currentSelectedELimb > battleManager->get_numOfLimbs(confirmedSelectedEnemy)-1){
-                                currentSelectedELimb = 0;
-                            }
-                            std::cout << "Current limb chosen: " << currentSelectedELimb << std::endl;
-                        }
-
-                    } else if ((ev.key.scancode == sf::Keyboard::Scan::Up) || (ev.key.scancode == sf::Keyboard::Scan::W)) {
-                        if (MainSelectMenuBool){
-                            this->currentSelectionId = 2;
-                            this->MainSelectMenu[currentSelectionId-1].setColor(sf::Color::Cyan);
-                            std::cout << "chose ID: " << currentSelectionId << std::endl;
-                        } if (EnemyLimbSelectMenuBool){ // enemy limb
-                            switch (currentSelectedELimb)
-                            {
-                            case 0:
-                                currentSelectedELimb = 4;
-                                break;
-                            case 1:
-                            case 2:
-                            case 3:
-                                currentSelectedELimb = 0;
-                                break;
-                            case 4:
-                                currentSelectedELimb = 2;
-                                break;
-                            case 5:
-                                currentSelectedELimb = 3;
-                                break;
-                            default:
-                                break;
-                            }
-                            std::cout << "Current limb chosen: " << currentSelectedELimb << std::endl;
-                        }
-                    } else if ((ev.key.scancode == sf::Keyboard::Scan::Down) || (ev.key.scancode == sf::Keyboard::Scan::S)) {
-                        if (MainSelectMenuBool){
-                            this->currentSelectionId = 4;
-                            this->MainSelectMenu[currentSelectionId-1].setColor(sf::Color::Cyan);
-                            std::cout << "chose ID: " << currentSelectionId << std::endl;
-                        } if (EnemyLimbSelectMenuBool){ // enemy limb
-                            switch (currentSelectedELimb)
-                            {
-                            case 0:
-                                currentSelectedELimb = 1;
-                                break;
-                            case 1:
-                            case 2:
-                                currentSelectedELimb = 4;
-                                break;
-                            case 3:
-                                currentSelectedELimb = 5;
-                                break;
-                            case 4:
-                            case 5:
-                                currentSelectedELimb = 0;
-                                break;
-                            default:
-                                break;
-                            }
-                            std::cout << "Current limb chosen: " << currentSelectedELimb << std::endl;
-                        }
-                    }
-
-                    if (ev.key.scancode == sf::Keyboard::Scan::Enter) {
-                        if (MainSelectMenuBool){
-                            confirmedSelection = currentSelectionId;
-                            std::cout << "Confimed ID: " << confirmedSelection << " from: " << currentSelectionId << std::endl;
-                        } if (EnemySelectMenuBool){
-                            confirmedSelectedEnemy = currentSelectedEnemy;
-                            confirmedSelection = 5;
-                            std::cout << "Confimed ID: " << confirmedSelectedEnemy << " from: " << currentSelectedEnemy << std::endl;
-                        } if (EnemyLimbSelectMenuBool){
-                            confirmedSelectedElimb = currentSelectedELimb;
-                            battleManager->enemyAttackChoice(confirmedSelectedEnemy, confirmedSelectedElimb);
-                            confirmedSelection = 0;
-                        }
-                    }
-
-                    if (ev.key.scancode == sf::Keyboard::Scan::Backspace) {
-                        confirmedSelection = 0;
-                        std::cout << "Back" << std::endl;
-                    }
-                }
-            } else {
-                battleManager->update_Status();
-            }
-
+            inBattleEvents();
         }
     }
 }
 
 void Game::update(){ //game updates
     this->pollEvents(); //calling any user inputs
+    this->inBattle = battleManager->get_battleStatus();
 
-    if (MainSelectMenuBool){ //updates the selection colours
-        for(int i = 0; i < 4; i ++){
-            if (i + 1 != currentSelectionId){
-                MainSelectMenu[i].setColor(sf::Color::White);
-            }
-        }
-    }
-
-    if (inBattle) {
+    if (inBattle) { //resetSelectionOptions
         switch (confirmedSelection)
         {
-        case 0:
+        case 0: //main
             MainSelectMenuBool = true;
             SkillSelectMenuBool = false;
-            GuardBool = false;
+            ItemSelectMenuBool = false;
             EnemySelectMenuBool = false;
             EnemyLimbSelectMenuBool = false;
             FleeBool = false;
             break;
-        case 1:
+        case 1: //skill
             SkillSelectMenuBool = true;
             MainSelectMenuBool = false;
-            GuardBool = false;
+            ItemSelectMenuBool  = false;
             EnemyLimbSelectMenuBool = false;
             FleeBool = false;
             EnemySelectMenuBool = false;
             break;
-        case 2:
-            GuardBool = true;
+        case 2: //item
+            ItemSelectMenuBool  = true;
             MainSelectMenuBool = false;
             SkillSelectMenuBool = false;
             EnemyLimbSelectMenuBool = false;
             FleeBool = false;
             EnemySelectMenuBool = false;
             break;
-        case 3:
+        case 3: //Enemy select
             EnemyLimbSelectMenuBool = false;
             MainSelectMenuBool = false;
             SkillSelectMenuBool = false;
-            GuardBool = false;
+            ItemSelectMenuBool  = false;
             FleeBool = false;
             EnemySelectMenuBool = true;
             break;
-        case 4:
+        case 4: //flee
             FleeBool = true;
             MainSelectMenuBool = false;
             SkillSelectMenuBool = false;
-            GuardBool = false;
+            ItemSelectMenuBool  = false;
             EnemyLimbSelectMenuBool = false;
             EnemySelectMenuBool = false;
             break;
-        case 5:
+        case 5: //limb select
             FleeBool = false;
             MainSelectMenuBool = false;
             SkillSelectMenuBool = false;
-            GuardBool = false;
+            ItemSelectMenuBool  = false;
             EnemyLimbSelectMenuBool = true;
             EnemySelectMenuBool = false;
             break;
@@ -286,19 +255,56 @@ void Game::update(){ //game updates
             break;
         }
     }
+
+    //update selection graphics
+    if (MainSelectMenuBool){
+        uiManager->update_Menu(confirmedSelection, currentSelectionId);
+    }
+    if (EnemySelectMenuBool){
+        uiManager->update_Menu(confirmedSelection, currentSelectedEnemy);
+    }
+    if (EnemyLimbSelectMenuBool){
+        uiManager->update_Menu(confirmedSelection, currentSelectedELimb);
+    }
 }
 void Game::render(){ //game renders
-    this->window->clear(sf::Color(15,15,15)); //clearing frame
+    this->window->clear(sf::Color(20,20,20)); //clearing frame
 
+    //battleRender
     if (inBattle){
-        this->window->draw(this->MenuLeft);
-        this->window->draw(this->MenuRight);
+        uiManager->positionBattleBack();
+        this->window->draw(uiManager->MenuLeft);
+        uiManager->positionBattleParty();
+        uiManager->positionBattleEnemy();
+        uiManager->update_Sprites();
+
+        uiManager->positionTurnOrderDisp();
+
+        for (int i = 0; i < 4; i++){
+            this->window->draw(uiManager->charSprites[i]->characterSprite);
+        }
+        //Enemy Render
+        for (int i = 0; i < uiManager->enemySprites.size(); i++){
+            for (int j = 0; j < battleManager->EnemyList[i]->get_limbNo(); j++){
+               this->window->draw(*uiManager->enemySprites[i]->characterLimbSprites[j]);
+            }
+        } 
+        for (int i = 0; i < uiManager->CharTurnOrderText.size(); i++){
+            this->window->draw(*uiManager->CharTurnOrderText[i]);
+        }
+
+        this->window->draw(uiManager->MenuRight);
         if (MainSelectMenuBool){
             for (int i = 0; i < 4; i++){
-                this->window->draw(this->MainSelectMenu[i]);
+                this->window->draw(uiManager->MainSelectMenu[i]);
+                this->window->draw(uiManager->MainSelectText[i]);
             }
         }
-        this->window->draw(this->SamuraiDisp);
+        if (EnemyLimbSelectMenuBool){
+            for (int i = 0; i < 6; i++){
+                this->window->draw(*uiManager->EnemyLimbSelectMenu->characterLimbSprites[i]);
+            }
+        }
     }
 
     this->window->display(); //displays frame
