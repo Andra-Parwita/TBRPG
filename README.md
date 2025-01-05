@@ -1,5 +1,6 @@
 # TBRPG
-V0.1
+V0.1.1
+reorganised and more ui and polished up some segmentation faults. Made ui manager less dependent on BattleManager  
 
 Done:  
 - Speedchecking for turns  
@@ -30,8 +31,10 @@ Combat:
 
 - enemy types (location dependent)
 - fixing enemy limb rendering for 64x64 sprites  
-- multi limbed enemies (do last or remove)  
 - enemy difficulty types (based on enemy class type)  
+- Combat Animations
+- Enemy Waves / hordes
+- multi limbed enemies (do last or remove)  
 
 Party:  
 - classes  

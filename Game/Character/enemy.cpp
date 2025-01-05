@@ -1,8 +1,9 @@
  #include "enemy.hpp"
  
  Enemy::Enemy(){
+    totEnemiesCreated++;
     this->name = "Empty Enemy";
-    this->enemyId = 0;
+    this->enemyId = totEnemiesCreated;
     this->limbNo = 6;
     this->isAlive = true;
     this->isEnemy = true;
@@ -19,14 +20,15 @@
  }
 
 Enemy::Enemy(int id){
+    totEnemiesCreated++;
     this->expectedFileSize = "";
-    this->enemyId = id;
+    this->enemyId = totEnemiesCreated;
     this->currentTurn = false;
     this->isEnemy = true;
 }
 
  Enemy::~Enemy(){
-
+    totEnemiesCreated--;
  }
 
 int Enemy::get_enemyId(){
@@ -43,3 +45,5 @@ std::string Enemy::get_expectedFileSize(){
 void Enemy::set_enemyId(int Nid){
     this->enemyId = Nid;
 }
+
+int Enemy::totEnemiesCreated = 0;

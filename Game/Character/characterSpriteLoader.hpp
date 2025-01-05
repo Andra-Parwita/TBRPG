@@ -16,6 +16,8 @@ private:
     int textureLeft;
     int scaleFactor;
     int fileSizeType; //dimensons of file, eg 32x32, 64x64
+
+    bool isActive;
 public:
     std::vector<sf::Sprite*> characterLimbSprites;
     sf::Sprite characterSprite;
@@ -27,6 +29,9 @@ public:
     void initLimbSprites(int, int);
     void loadSprite(std::string);
     void updateSprite(int limbId);
+
+    void set_isActive(bool);
+    bool get_isActive();
 };
 
 

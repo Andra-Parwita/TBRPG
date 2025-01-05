@@ -7,6 +7,7 @@
 #include "Character/enemy.hpp"
 #include "Character/enemyClasses/skeleton.hpp"
 #include <iostream>
+#include <memory>
 #include <string>
 #include <time.h>
 #include <algorithm>
@@ -15,7 +16,6 @@ class BattleManager
 {
 private:
     Player* player;
-    Enemy* enemies;
 
     int turnNumber; //current turn number
     int totalTurns; //max turns before reset

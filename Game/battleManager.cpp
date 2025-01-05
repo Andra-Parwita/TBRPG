@@ -1,44 +1,63 @@
 #include "battleManager.hpp"
 
 BattleManager::BattleManager(Player* Nplayer) : player(Nplayer){
-    srand(time(NULL));
+    srand(static_cast<unsigned>(time(NULL)));
+    if (!player) {
+        std::cerr << "Error: Player is null!" << std::endl;
+        return;
+    }
     initBattle();
 }
 
 BattleManager::BattleManager(){
-    srand(time(NULL));
+    srand(static_cast<unsigned>(time(NULL)));
     initBattle();
 }
 
 BattleManager::~BattleManager(){
-
+    for (auto* enemy : EnemyList) {
+        delete enemy;
+    }
 }
 
 void BattleManager::initBattle(){ //call this to start battle
-    battleStatus = true;
+    if (!player) {
+        std::cerr << "Error: Player is null!" << std::endl;
+        return;
+    }
 
+    battleStatus = true;
     enemySpawner(); // default for test
 
      // Add all party members to the battleParticipants list
     for (int i = 0; i < player->party.get_numMembers(); i++) {
-        battleParticipants.push_back(player->party.members[i]);
+        auto* member = player->party.members[i];
+        if (member) {
+            battleParticipants.push_back(member);
+        }
     }
 
     // Add all enemies to the battleParticipants list
-    for (int i = 0; i < 1; i++) {
-        battleParticipants.push_back(&enemies[i]);
+    for (auto* enemy : EnemyList) {
+        if (enemy) {
+            battleParticipants.push_back(enemy);
+        }
     }
 
     // Sort the participants based on speed (higher speed first)
     sortSpeed();
     
     // For example, printing the sorted turn order by speed:
-    for (Character* participant : battleParticipants) {
-        std::cout << "Name Order by Speed: " << participant->get_name() << std::endl;
+    for (auto* participant : battleParticipants) {
+        if (participant){
+            std::cout << "Name Order by Speed: " << participant->get_name() << std::endl;
+        }
     }
 
-    this->totalTurns = battleParticipants.size() -1;
-    battleParticipants[0]->set_currentTurn(true); //makes the first person turn active
+    this->totalTurns = static_cast<int>(battleParticipants.size()) -1;
+    if (!battleParticipants.empty()) { //set first person active if not empty
+        battleParticipants[0]->set_currentTurn(true);
+    }
     turnNumber = 0;
 }
 
@@ -47,18 +66,26 @@ void BattleManager::sortSpeed(){
     std::sort(battleParticipants.begin(), battleParticipants.end(), [](Character* a, Character* b) {
         return a->get_speed() > b->get_speed(); // Sorting in descending order of speed
     });
+
     this->totalTurns = battleParticipants.size() -1;
+
     std::cout << "Turn Order:" << std::endl;
-    for (Character* participants : battleParticipants){
-        std::cout << participants->get_name() << std::endl;
+    for (auto* participants : battleParticipants){
+        if (participants) {
+            std::cout << participants->get_name() << std::endl;
+        }
     }
 }
 
 void BattleManager::enemySpawner(){ //for spawning mechanics later
-    enemies = new Skeleton();
-    EnemyList.push_back(enemies); //add nnumber of enemies to the list
-    enemyAliveNum = EnemyList.size();
-    enemies->set_isAlive(true);
+    for (int i = 0; i < 3; i++) {
+        auto* newEnemy = new Enemy(); 
+        if (newEnemy) {
+            EnemyList.push_back(newEnemy);
+            newEnemy->set_isAlive(true);
+        }
+    }
+    enemyAliveNum = static_cast<int>(EnemyList.size());
 }
 
 int BattleManager::check_Turns(){
@@ -97,22 +124,24 @@ int BattleManager::check_Turns(){
 }
 
 void BattleManager::removeDeadChars(){
-    // Remove dead enemies from battleParticipants
     battleParticipants.erase(std::remove_if(battleParticipants.begin(), battleParticipants.end(),
-        [](Character* participant) { return !participant->get_isEnemy() && !participant->get_isAlive(); }), battleParticipants.end());
+    [](Character* participant) { return participant && !participant->get_isAlive(); }),battleParticipants.end());
 }
 
 void BattleManager::removeDeadEnemies() {
-    // Remove dead enemies from EnemyList
-    EnemyList.erase(std::remove_if(EnemyList.begin(), EnemyList.end(),
-        [](Enemy* enemy) { return !enemy->get_isAlive(); }), EnemyList.end());
-    
-    // Remove dead enemies from battleParticipants
-    battleParticipants.erase(std::remove_if(battleParticipants.begin(), battleParticipants.end(),
-        [](Character* participant) { return participant->get_isEnemy() && !participant->get_isAlive(); }), battleParticipants.end());
+    EnemyList.erase(
+        std::remove_if(EnemyList.begin(), EnemyList.end(),
+                       [](Enemy* enemy) { return enemy && !enemy->get_isAlive(); }),
+        EnemyList.end());
 
-    // Update the number of enemies alive
-    enemyAliveNum = EnemyList.size();
+    // Update enemy count
+    enemyAliveNum = static_cast<int>(EnemyList.size());
+
+    // Remove dead enemies from battleParticipants
+    battleParticipants.erase(
+        std::remove_if(battleParticipants.begin(), battleParticipants.end(),
+                       [](Character* participant) { return participant && participant->get_isEnemy() && !participant->get_isAlive(); }),
+        battleParticipants.end());
 }
 
 void BattleManager::enemyAttackChoice(int enemyChosen, int limbChosen){
@@ -133,7 +162,7 @@ void BattleManager::attackHitCalc(float targetLimbChance, int limbChosen){
     std::cout << battleParticipants[turnNumber]->get_name() << " " << turnNumber << "\n";
     if (chance < (targetLimbChance * (1 + 1-battleParticipants[turnNumber]->get_atkAccuracy()))){
         std::cout << "\nHit by: " << battleParticipants[turnNumber]->get_name() << " Got: " << chance << " Chance: " << targetLimbChance << std::endl;
-        EnemyList[chosenEnemy]->limbs[limbChosen]->setHp(EnemyList[chosenEnemy]->limbs[limbChosen]->getHp() - battleParticipants[turnNumber]->get_baseDmg());
+        EnemyList[chosenEnemy]->limbs[limbChosen]->setHp(EnemyList[chosenEnemy]->limbs[limbChosen]->getHp() - battleParticipants[turnNumber]->get_baseDmg()*10); 
         std::cout << "Dealt: " << battleParticipants[turnNumber]->get_baseDmg() << " Limb Hp: "<<  EnemyList[chosenEnemy]->limbs[limbChosen]->getHp()  << "/" << 
         EnemyList[chosenEnemy]->limbs[limbChosen]->getMaxHp() << "\nTotal Hp: " << EnemyList[chosenEnemy]->get_Hp()<< "/" << EnemyList[chosenEnemy]->get_MaxHp() << "\n" << std::endl;
     } else {
@@ -147,6 +176,9 @@ void BattleManager::attackHitCalc(float targetLimbChance, int limbChosen){
 }
 
 bool BattleManager::update_Status(){
+    removeDeadEnemies();
+    removeDeadChars();
+
     int playerCharsAlive = battleParticipants.size() - EnemyList.size();
     for (Character* participant : battleParticipants){
         if (!(participant->get_isAlive()) && participant->get_isEnemy()){
@@ -189,7 +221,7 @@ void BattleManager::enemyTurn(){ //add ai difficulty types later instead of pure
     if (chance < (battleParticipants[chosenChar]->limbs[chosenLimb]->getlimbHitChance()* (1 + 1-battleParticipants[turnNumber]->get_atkAccuracy()))) {
         battleParticipants[chosenChar]->set_limbHP(chosenLimb, battleParticipants[chosenChar]->get_limbHP(chosenLimb) - battleParticipants[turnNumber]->get_baseDmg());
 
-        std::cout << battleParticipants[turnNumber]->get_name() << " Dealt: "<< battleParticipants[turnNumber]->get_baseDmg()*10 << " To: " << battleParticipants[chosenChar]->get_name() << "\n "
+        std::cout << battleParticipants[turnNumber]->get_name() << " Dealt: "<< battleParticipants[turnNumber]->get_baseDmg() << " To: " << battleParticipants[chosenChar]->get_name() << "\n "
         << "Limb id: "<< chosenLimb << " :" << battleParticipants[chosenChar]->get_limbHP(chosenLimb) << "/" << battleParticipants[chosenChar]->limbs[chosenLimb]->getMaxHp() << "\n";
     } else {
         std::cout << "Enemy missed!" << std::endl;

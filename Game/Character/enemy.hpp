@@ -13,6 +13,7 @@ protected:
     std::string expectedFileSize;
 
 public:
+    static int totEnemiesCreated;
     int limbNo;
     Enemy();
     Enemy(int);

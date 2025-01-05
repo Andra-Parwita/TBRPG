@@ -66,10 +66,11 @@ void Game::inBattleEvents(){ //battle controls
                 if (MainSelectMenuBool){ //main
                     this->currentSelectionId = 1;
                     std::cout << "chose ID: " << currentSelectionId << std::endl;
+
                 } if (EnemySelectMenuBool){ //enemy
-                    this->currentSelectedEnemy--;
-                    if (currentSelectedEnemy < 0){
-                        currentSelectedEnemy = battleManager->get_numOfEnemies()-1;
+                    this->currentSelectedEnemy++;
+                    if (currentSelectedEnemy > battleManager->get_numOfEnemies()-1){
+                        currentSelectedEnemy = 0;
                     }
                     std::cout << "Current Enemy chosen: " << currentSelectedEnemy << std::endl;
 
@@ -85,11 +86,13 @@ void Game::inBattleEvents(){ //battle controls
                 if (MainSelectMenuBool){ //main
                     this->currentSelectionId = 3;
                     std::cout << "chose ID: " << currentSelectionId << std::endl;
+
                 } if (EnemySelectMenuBool){ //enemy
-                    this->currentSelectedEnemy++;
-                    if (currentSelectedEnemy > battleManager->get_numOfEnemies()-1){
-                        currentSelectedEnemy = 0;
+                    this->currentSelectedEnemy--;
+                    if (currentSelectedEnemy < 0){
+                        currentSelectedEnemy = battleManager->get_numOfEnemies()-1;
                     }
+            
                     std::cout << "Current Enemy chosen: " << currentSelectedEnemy << std::endl;
 
                 } if (EnemyLimbSelectMenuBool){ // enemy limb
@@ -197,6 +200,10 @@ void Game::pollEvents(){
 }
 
 void Game::update(){ //game updates
+    if (currentSelectedEnemy > battleManager->get_numOfEnemies()-1){
+        std::cout << "lowered Selection to: " << currentSelectedEnemy << std::endl;
+        currentSelectedEnemy--;
+    }
     this->pollEvents(); //calling any user inputs
     this->inBattle = battleManager->get_battleStatus();
 
@@ -269,31 +276,47 @@ void Game::update(){ //game updates
 }
 void Game::render(){ //game renders
     this->window->clear(sf::Color(20,20,20)); //clearing frame
-
+    
     //battleRender
     if (inBattle){
         uiManager->positionBattleBack();
         this->window->draw(uiManager->MenuLeft);
         uiManager->positionBattleParty();
         uiManager->positionBattleEnemy();
-        uiManager->update_Sprites();
-
         uiManager->positionTurnOrderDisp();
+        uiManager->update_Sprites(); 
+        uiManager->update_CharStats();
 
-        for (int i = 0; i < 4; i++){
+        for (int i = 0; i < uiManager->charSprites.size(); i++){ //play chars
             this->window->draw(uiManager->charSprites[i]->characterSprite);
         }
         //Enemy Render
-        for (int i = 0; i < uiManager->enemySprites.size(); i++){
+        for (int i = 0; i < uiManager->enemySprites.size(); i++){ //enemy 
             for (int j = 0; j < battleManager->EnemyList[i]->get_limbNo(); j++){
                this->window->draw(*uiManager->enemySprites[i]->characterLimbSprites[j]);
             }
         } 
-        for (int i = 0; i < uiManager->CharTurnOrderText.size(); i++){
+        for (int i = 0; i < uiManager->CharTurnOrderText.size(); i++){ // turn order text
             this->window->draw(*uiManager->CharTurnOrderText[i]);
         }
 
-        this->window->draw(uiManager->MenuRight);
+        this->window->draw(uiManager->MenuRight); //right menu
+
+        for (int i = 0; i < uiManager->HealthBar.size(); i++){ //healtbar
+            this->window->draw(*uiManager->HealthBar[i]);
+        } 
+
+        
+        for (int i = 0; i < uiManager->TotalHp.size(); i++){ //Total Hp text
+            this->window->draw(*uiManager->TotalHp[i]);
+        }
+
+        for (int i = 0; i < uiManager->charHpIndicator.size(); i++){ //mini person ui for each char
+            for (int j = 0; j < 6; j++){
+                this->window->draw(*uiManager->charHpIndicator[i]->characterLimbSprites[j]);
+            }
+        } 
+
         if (MainSelectMenuBool){
             for (int i = 0; i < 4; i++){
                 this->window->draw(uiManager->MainSelectMenu[i]);
@@ -301,11 +324,12 @@ void Game::render(){ //game renders
             }
         }
         if (EnemyLimbSelectMenuBool){
-            for (int i = 0; i < 6; i++){
+            for (int i = 0; i < 6; i++){ //change if making enemies with more limbs
                 this->window->draw(*uiManager->EnemyLimbSelectMenu->characterLimbSprites[i]);
             }
         }
-    }
+        uiManager->update_Sprites(); 
+    } 
 
-    this->window->display(); //displays frame
+    this->window->display(); //displays frame 
 }

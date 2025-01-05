@@ -1,6 +1,7 @@
 #include "characterSpriteLoader.hpp"
 
 characterSpriteLoader::characterSpriteLoader(){
+    isActive = true;
     fileSizeType = 32;
     scaleFactor = 1;
     textureHeight = fileSizeType;
@@ -13,6 +14,7 @@ characterSpriteLoader::characterSpriteLoader(){
 }
 
 characterSpriteLoader::characterSpriteLoader(std::string fileName){
+    isActive = true;
     fileSizeType = 32;
     if (fileName.size() >= 2){
         std::string temp = fileName.substr(fileName.size()-2);
@@ -67,9 +69,11 @@ void characterSpriteLoader::initLimbSprites(int limbNum, int NscaleFactor){
         case 0: //head
             if (fileSizeType > 32){
                 characterLimbSprites[i]->setTextureRect(sf::Rect<int>({12, 0}, {11, 11}));
+                characterLimbSprites[i]->move(0*scaleFactor+offset,0*scaleFactor);
+            } else {
+                characterLimbSprites[i]->setTextureRect(sf::Rect<int>({12, 0}, {11, 11}));
+                characterLimbSprites[i]->move(0*scaleFactor+offset,0*scaleFactor);
             }
-            characterLimbSprites[i]->setTextureRect(sf::Rect<int>({12, 0}, {11, 11}));
-            characterLimbSprites[i]->move(0*scaleFactor+offset,0*scaleFactor);
             break;
         case 1: //torso
             characterLimbSprites[i]->setTextureRect(sf::Rect<int>({12, 11}, {9, 12}));
@@ -124,4 +128,12 @@ void characterSpriteLoader::updateSprite(int limbId){ //for damage models
     } else {
         std::cerr << "Invalid limbId or uninitialized sprite!" << std::endl; 
     }
+}
+
+bool characterSpriteLoader::get_isActive(){
+    return isActive;
+}
+
+void characterSpriteLoader::set_isActive(bool Nbool){
+    isActive = Nbool;
 }
