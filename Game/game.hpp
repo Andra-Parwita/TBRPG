@@ -9,6 +9,7 @@
 #include "player.hpp"
 #include "battleManager.hpp"
 #include "UiManager.hpp"
+#include "OverUiManager.hpp"
 
 class Game {
     private:
@@ -16,8 +17,11 @@ class Game {
         sf::RenderWindow* window;  // window
         sf::VideoMode videoMode;   // window size params
         sf::Event ev;  // gets current input events on the window (continuous)
+        sf::View view;
 
+        //Game status bools
         bool inBattle;
+        bool inOverworld;
 
         //player
         Player player;
@@ -25,13 +29,16 @@ class Game {
         //Managers
         BattleManager* battleManager;
         UiManager* uiManager;
+        OverUiManager* overworldManager;
 
+        //selection bools
         bool MainSelectMenuBool;
         bool EnemySelectMenuBool;
         bool EnemyLimbSelectMenuBool;
         bool SkillSelectMenuBool;
         bool ItemSelectMenuBool;
         bool FleeBool; //if fleeing or not
+        bool CharSelectmenuBool; // (for skill / item eg, healing)
 
         //current Selection
         int currentSelectionId; //switching between selection options
@@ -40,8 +47,14 @@ class Game {
         int currentSelectedEnemy;
         int confirmedSelectedEnemy; 
 
+        int currentSelectedChar;
+        int confirmedSelectedChar; 
+
         int currentSelectedELimb;
         int confirmedSelectedElimb;
+
+        int currentSelectedSkill;
+        int confirmedSelectedSkill;
 
         //sprites and textures
         sf::Texture squareTex; //default square tex
@@ -55,6 +68,8 @@ class Game {
         void initWindow();     // starts the window
         void initSprites(); //init sprites
 
+        sf::View getLetterboxView(sf::View, int, int);
+
     public:
         //const
         Game();
@@ -66,9 +81,11 @@ class Game {
         // Functions
         void pollEvents();
         void inBattleEvents();
+        void inOverworldEvents();
 
         void update();
         void render();
+
 };
 
 

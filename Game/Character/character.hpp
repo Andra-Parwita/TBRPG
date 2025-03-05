@@ -6,22 +6,30 @@
 #include <string>
 #include <vector>
 #include "characterSpriteLoader.hpp"
+#include "classes/charClass.hpp"
+#include "classes/clericClass.hpp"
+#include "classes/knightClass.hpp"
+#include "classes/mageClass.hpp"
+#include "classes/roninClass.hpp"
 
 class Character 
 {
 protected:
     std::string name; //name
+    std::string className;
     int currentHp; //current total HP
+    int currentMp; //current total MP
     int level; //level
     int exp; //experience points
+    int classType; //class of the character
 
     int speed; //speed 
     int maxHp; //max total HP
+    int maxMp; //max total MP
     float critChance; //crit chance of char
     int baseDmg; //base dmg of char
     float atkAccuracy; //attack accuracy of char
 
-    int classType; //class of the character
     bool isAlive;
     bool isEnemy;
     bool currentTurn;
@@ -37,8 +45,11 @@ protected:
     bool RlegEffect;
 
 public:
+    CharClass* charClass; //class type of the char
+
     std::vector<Limb*> limbs; //limbs of character
-    characterSpriteLoader* sprite;
+    characterSpriteLoader* sprite; // charsprite
+    characterSpriteLoader* spriteChibi; //overworld sprite
     //getters
 
     int get_MaxHp();
@@ -56,6 +67,9 @@ public:
     float get_critChance();
     int get_baseDmg();
     float get_atkAccuracy();
+    int get_maxMp();
+    int get_currentMp();
+    int get_NoOfSkills();
 
     //setters
     virtual void set_limbHP(int, int);
@@ -68,6 +82,7 @@ public:
     void set_critChance(float);
     void set_baseDmg(int);
     void set_atkAccuracy(float);
+    void set_currentMp(int);
 
     void reset_limbDebuff();
 

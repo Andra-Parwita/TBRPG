@@ -7,6 +7,7 @@ UiManager::UiManager(){
     if (!squareTex.loadFromFile("./Sprites/Square.png")){
         std::cout << "Cannot load Square Tex" << std::endl;
     }
+    animationPlaying = false;
 }
 
 UiManager::UiManager(Party* NParty){
@@ -20,13 +21,92 @@ UiManager::UiManager(Party* NParty){
     for (int i = 0; i < currentParty->get_numMembers(); i++){
         charSprites.push_back(currentParty->members[i]->sprite);
     }
+    animationPlaying = false;
 }
 
 UiManager::~UiManager(){
-     for (auto spriteLoader : enemySprites) {
+    for (auto spriteLoader : enemySprites) {
         delete spriteLoader;  // Make sure to delete each allocated characterSpriteLoader
     }
-    enemySprites.clear();  // Clear the vector to remove the now-deleted pointers
+    enemySprites.clear(); 
+    std::cout << "Enemy Sprites cleared" << std::endl;
+
+    charSprites.clear(); 
+    std::cout << "Charsprites Cleared" << std::endl; 
+
+    for (auto EnemyMenu : EnemySelectMenu) {
+        delete EnemyMenu;  
+    }
+    EnemySelectMenu.clear();
+    std::cout << "EnemySelect Cleared" << std::endl;
+
+    for (auto SkillMenu : SkillSelectMenu) {
+        delete SkillMenu;  
+    }
+    SkillSelectMenu.clear();
+    std::cout << "SkillMenu Cleared" << std::endl;
+
+    for (auto Items : ItemSelectMenu) {
+        delete Items;  
+    }
+    ItemSelectMenu.clear();
+    std::cout << "ItemMenu Cleared" << std::endl;
+
+    for (auto TurnOrderText : CharTurnOrderText) {
+        delete TurnOrderText;  
+    }
+    CharTurnOrderText.clear();
+    std::cout << "TurnOrder Cleared" << std::endl;
+
+    for (auto HpIndicator : charHpIndicator) {
+        delete HpIndicator;  
+    }
+    charHpIndicator.clear();
+    std::cout << "HP Indicator Cleared" << std::endl;
+
+    //non vector
+    /* if (MainSelectMenu != nullptr) {
+        std::cout << "Main test Clearing: "  << MainSelectMenu << std::endl;
+        delete MainSelectMenu;
+        MainSelectMenu = nullptr;  // Avoid dangling pointer
+        std::cout << "Main Select Menu Cleared" << std::endl;
+    } 
+
+    if (MainSelectText != nullptr) {
+        std::cout << "Main selec Clearing: "  << MainSelectText << std::endl;
+        delete MainSelectText;
+        MainSelectText = nullptr;
+        std::cout << "Main Select Text Cleared" << std::endl;
+    } 
+
+    if (EnemyLimbSelectMenu != nullptr) {
+        std::cout << "Limbs Clearing: "  << EnemyLimbSelectMenu << std::endl;
+        delete EnemyLimbSelectMenu;
+        EnemyLimbSelectMenu = nullptr;
+        std::cout << "Enemy Limbs Cleared" << std::endl;
+    }
+
+    if (CharStatsText != nullptr) {
+        std::cout << "stats Clearing: "  << CharStatsText << std::endl;
+        delete CharStatsText;
+        CharStatsText = nullptr;
+        std::cout << "Char Stats Cleared" << std::endl;
+    }
+
+    if (dmgIndicator != nullptr) {
+        std::cout << "dmg Clearing: "  << dmgIndicator << std::endl;
+        delete dmgIndicator;
+        dmgIndicator = nullptr;
+        std::cout << "Dmg Indicator Cleared" << std::endl;
+    }
+
+    if (accuracyIndicator != nullptr) {
+        std::cout << "acc Clearing: "  << accuracyIndicator << std::endl;
+        delete accuracyIndicator;
+        accuracyIndicator = nullptr;
+        std::cout << "Acc Indicator Cleared" << std::endl;
+    } */
+
 }
 
 void UiManager::load_BattleManager(BattleManager* importedBattleManager){
@@ -81,13 +161,13 @@ void UiManager::InitBattleMenu(){
     MainSelectMenu[2].setPosition(sf::Vector2f(250.f,850.f));
     MainSelectMenu[3].setPosition(sf::Vector2f(150.f,950.f));
 
-    MainSelectText[0].setPosition(sf::Vector2f(50.f,850.f));
+    MainSelectText[0].setPosition(sf::Vector2f(80.f,885.f));
     MainSelectText[0].setString("Skill");
-    MainSelectText[1].setPosition(sf::Vector2f(150.f,750.f));
+    MainSelectText[1].setPosition(sf::Vector2f(180.f,785.f));
     MainSelectText[1].setString("Item");
-    MainSelectText[2].setPosition(sf::Vector2f(250.f,850.f));
+    MainSelectText[2].setPosition(sf::Vector2f(260.f,885.f));
     MainSelectText[2].setString("Attack");
-    MainSelectText[3].setPosition(sf::Vector2f(150.f,950.f));
+    MainSelectText[3].setPosition(sf::Vector2f(180.f,985.f));
     MainSelectText[3].setString("Flee");
 
     for (int i = 0; i < battleManager->EnemyList.size(); i++){ //position later for enemy selection
@@ -121,13 +201,13 @@ void UiManager::InitCharStatsMenu(){
         TotalHp[i]->setFont(gameFont);
         TotalHp[i]->setOutlineThickness(2.f);
         TotalHp[i]->setCharacterSize(20);
-        TotalHp[i]->setPosition(sf::Vector2f(440+300.f*i, 750.f));
+        TotalHp[i]->setPosition(sf::Vector2f(480+300.f*i, 850.f));
         TotalHp[i]->setString("       "+ currentParty->members[i]->get_name() + 
         "\n\nHP: "+ std::to_string(currentParty->members[i]->get_Hp()) + "/" 
         + std::to_string(currentParty->members[i]->get_MaxHp()));
 
         charHpIndicator.push_back(new characterSpriteLoader("Man"));
-        charHpIndicator[i]->characterSprite.setPosition(380 + 300.f * i, 830.f);
+        charHpIndicator[i]->characterSprite.setPosition(TotalHp[i]->getPosition().x - 100.f, 880.f);
         charHpIndicator[i]->initLimbSprites(6, 3.f);
 
         HealthBar.push_back(new sf::RectangleShape);
@@ -135,13 +215,22 @@ void UiManager::InitCharStatsMenu(){
         HealthBar[i]->move(sf::Vector2f(-10.f,45.f));
         HealthBar[i]->setFillColor(sf::Color::Red);
         HealthBar[i]->setSize(defaultHpBarSize);
-
     }
+    accuracyIndicator = new sf::Text;
+    accuracyIndicator->setFont(gameFont);
+    accuracyIndicator->setOutlineThickness(2.f);
+    accuracyIndicator->setCharacterSize(20);
+
+    dmgIndicator = new sf::Text;
+    dmgIndicator->setFont(gameFont);
+    dmgIndicator->setOutlineThickness(2.f);
+    dmgIndicator->setCharacterSize(24);
+    
 }
 
 void UiManager::update_CharStats(){ //HP and current stats of characters
     for (int i = 0; i < TotalHp.size(); i++){
-        TotalHp[i]->setString("     "+currentParty->members[i]->get_name() + 
+        TotalHp[i]->setString("     "+currentParty->members[i]->get_name() +
         "\n\nHP: "+  std::to_string(currentParty->members[i]->get_Hp()) + "/" 
         + std::to_string(currentParty->members[i]->get_MaxHp()));
     }
@@ -168,6 +257,7 @@ void UiManager::update_CharStats(){ //HP and current stats of characters
 
 void UiManager::update_Menu(int MenuId, int selectedId){ //Menu Updates
     //syncEnemyList();
+    std::ostringstream oss;
 
     if (currentEnemySelection >= 0 && currentEnemySelection < battleManager->EnemyList.size()) {
         if (battleManager->EnemyList[currentEnemySelection]->get_isAlive()){
@@ -255,7 +345,29 @@ void UiManager::update_Menu(int MenuId, int selectedId){ //Menu Updates
             enemySprites[currentEnemySelection]->characterLimbSprites[selectedId]->setColor(sf::Color::Cyan);
         }
 
+        for (int i = 0; i < battleManager->EnemyList[currentEnemySelection]->limbs.size(); i++){
+            if(battleManager->EnemyList[currentEnemySelection]->limbs[i]->getHp() < battleManager->EnemyList[currentEnemySelection]->limbs[i]->getMaxHp()){
+                float temp = static_cast<float>(battleManager->EnemyList[currentEnemySelection]->limbs[i]->getHp())/static_cast<float>(battleManager->EnemyList[currentEnemySelection]->limbs[i]->getMaxHp());
+
+                int red = static_cast<int>(255 * (1 - temp));  // Red decreases as HP increases
+                int green = static_cast<int>(255 * temp);      // Green increases as HP increases
+
+                EnemyLimbSelectMenu->characterLimbSprites[i]->setColor(sf::Color(red, green, 0));
+            }
+        }
         EnemyLimbSelectMenu->characterLimbSprites[selectedId]->setColor(sf::Color(0,255,255,200)); 
+
+
+
+        accuracyIndicator->setPosition(enemySprites[currentEnemySelection]->characterLimbSprites[selectedId]->getPosition());
+        if (selectedId == 0 || selectedId == 1){
+            accuracyIndicator->move(20.f,40.f); //offset
+        } else {
+            accuracyIndicator->move(0.f,20.f); //offset
+        }
+        oss << std::fixed << std::setprecision(1) << battleManager->EnemyList[currentEnemySelection]->limbs[selectedId]->getlimbHitChance() * 100;
+        accuracyIndicator->setString(oss.str() + "%");
+
         break;
 
     default:
@@ -266,6 +378,10 @@ void UiManager::update_Menu(int MenuId, int selectedId){ //Menu Updates
 
 void UiManager::update_Sprites() {
     cleanupCharSprites();
+    for (auto chars : charSprites){
+        chars->idleAnimate();
+    }
+
     for (size_t i = 0; i < enemySprites.size(); i++) {
         if (i >= battleManager->EnemyList.size() || enemySprites[i] == nullptr || battleManager->EnemyList[i] == nullptr) {
             continue; // Skip mismatched or null entries
@@ -288,47 +404,29 @@ void UiManager::update_Sprites() {
 
 
 void UiManager::positionBattleParty(){ //positions char sprites
-    float spHeight = 550.f;
+    float spHeight = 600.f;
     for (int i = 0; i < charSprites.size(); i++){
         
         charSprites[i]->characterSprite.setScale(sf::Vector2f(8.f,8.f));
-        switch (i)
-        {
-        case 0:
-            charSprites[i]->characterSprite.setPosition(sf::Vector2f(350.f,spHeight));
-            break;
-        case 1:
-            charSprites[i]->characterSprite.setPosition(sf::Vector2f(650.f,spHeight));
-            break;
-        case 2:
-            charSprites[i]->characterSprite.setPosition(sf::Vector2f(950.f,spHeight));
-            break;
-        case 3:
-            charSprites[i]->characterSprite.setPosition(sf::Vector2f(1250.f,spHeight));
-            break;
-        default:
-            charSprites[i]->characterSprite.setPosition(sf::Vector2f(100.f,spHeight));
-            charSprites[i]->characterSprite.setColor(sf::Color::Magenta);
-            break;
-        }
+        charSprites[i]->characterSprite.setPosition(sf::Vector2f(400 + 300.f * i,spHeight));
     }
 }
 
 void UiManager::positionBattleBack(){ //pos background
     MenuLeft.setTexture(squareTex);
     MenuLeft.setColor(sf::Color(25,25,25));
-    MenuLeft.setScale(sf::Vector2f(2.f,3.0f));
+    MenuLeft.setScale(sf::Vector2f(2.f,4.0f));
     MenuLeft.setPosition(sf::Vector2f(0.f,730.f));
 
     MenuRight.setTexture(squareTex);
     MenuRight.setColor(sf::Color(25,25,25,170));
-    MenuRight.setScale(sf::Vector2f(7.0f,3.0f));
-    MenuRight.setPosition(sf::Vector2f(400.f,730.f));
+    MenuRight.setScale(sf::Vector2f(10.0f,4.0f));
+    MenuRight.setPosition(sf::Vector2f(400.f,830.f));
 }
 
 void UiManager::positionBattleEnemy() {
     syncEnemyList();
-    float defaultHeight = 150.f;
+    float defaultHeight = 250.f;
 
     // Define fixed positions for enemies
     std::vector<sf::Vector2f> enemyPositions = {
@@ -420,5 +518,37 @@ void UiManager::cleanupCharSprites() {
                 enemySprites[i]->characterLimbSprites[k]->setColor(sf::Color(0, 0, 0, 0));
             }
         }
+    }
+}
+
+void UiManager::dmgPopupAnimation(sf::RenderWindow* window) {
+    // Start the animation only if it's not already playing
+    if (!animationPlaying) {
+        animationPlaying = true;
+        aniClock.restart();  // Reset the animation clock
+
+        sf::Vector2f enemyPos = enemySprites[currentEnemySelection]->characterSprite.getPosition();
+        dmgIndicator->setPosition(enemyPos.x + 130, enemyPos.y-10);  
+        dmgIndicator->setString(battleManager->attackOutcome); 
+        dmgIndicator->setFillColor(sf::Color::Red);
+    }
+
+    // Update the popup animation over time
+    float elapsedTime = aniClock.getElapsedTime().asSeconds();
+    if (elapsedTime < 1.f) {  // Animation duration (1 second)
+        // Move the damage text upwards
+        dmgIndicator->move(0.f, -0.5f);  // Adjust the speed of movement
+
+        // Fade out the text
+        int alpha = static_cast<int>(255 - (255 * elapsedTime));  // Fade over time
+        dmgIndicator->setFillColor(sf::Color(255, 0, 0, alpha));
+
+        // Draw the damage text
+        window->draw(*dmgIndicator);
+    } else {
+        // Once the animation is done, make the text invisible and stop the animation
+        dmgIndicator->setFillColor(sf::Color(0, 0, 0, 0));  // Make the text invisible when done
+        animationPlaying = false;  // End the animation
+        battleManager->attacked = false;
     }
 }

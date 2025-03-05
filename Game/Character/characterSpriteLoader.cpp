@@ -11,9 +11,11 @@ characterSpriteLoader::characterSpriteLoader(){
         std::cout << "Cannot load char Tex" << std::endl;
     }
     characterSprite.setTexture(characterTexture);
+    animated = false;
 }
 
 characterSpriteLoader::characterSpriteLoader(std::string fileName){
+    animated = true;
     isActive = true;
     fileSizeType = 32;
     if (fileName.size() >= 2){
@@ -26,24 +28,33 @@ characterSpriteLoader::characterSpriteLoader(std::string fileName){
     textureHeight = fileSizeType;
     textureWidth = fileSizeType;
     textureLeft = 0;
-    filePath = "./Sprites/" + fileName + ".png";
+    filePath = "./Sprites/" + fileName + "Ani.png";
     if (!characterTexture.loadFromFile(filePath)){
-        std::cout << "Cannot load char Tex" << std::endl;
-        if (!characterTexture.loadFromFile("./Sprites/ManSheet.png")){
-            std::cout << "Cannot load backup char Tex" << std::endl;
-        } else {
-            std::cout << "Loaded: " << fileName << " as Man Sheet" << std::endl;
-            filePath = "./Sprites/ManSheet.png";
-        } 
+        std::cout << "No animated File, finding default..." << std::endl;
+        filePath = "./Sprites/" + fileName + ".png";
+        animated = false;
+        if (!characterTexture.loadFromFile(filePath)){
+            std::cout << "Cannot load char Tex" << std::endl;
+            if (!characterTexture.loadFromFile("./Sprites/ManSheet.png")){
+                std::cout << "Cannot load backup char Tex" << std::endl;
+            } else {
+                std::cout << "Loaded: " << fileName << " as Man Sheet" << std::endl;
+                filePath = "./Sprites/ManSheet.png";
+            } 
+        }
     } else {
         std::cout << "Loaded: " << fileName << std::endl;
     }
     characterSprite.setTexture(characterTexture);
+    if (animated){
+        characterSprite.setTextureRect(sf::Rect<int>({0,0},{fileSizeType,fileSizeType}));
+    }
 }
 
 characterSpriteLoader::~characterSpriteLoader(){
     for (auto limbSprite : characterLimbSprites) {
         delete limbSprite;
+        limbSprite = nullptr;
     }
     characterLimbSprites.clear();
 }
@@ -136,4 +147,21 @@ bool characterSpriteLoader::get_isActive(){
 
 void characterSpriteLoader::set_isActive(bool Nbool){
     isActive = Nbool;
+}
+
+void characterSpriteLoader::idleAnimate(){
+    if (animated){
+        if (idleClock.getElapsedTime().asSeconds() > 0.25){
+            int left = characterSprite.getTextureRect().left + fileSizeType;
+            if (left >= fileSizeType*4){
+                left = 0;
+            }
+            int width = characterSprite.getTextureRect().width;
+            int height = characterSprite.getTextureRect().height;
+            int top = characterSprite.getTextureRect().top;
+            characterSprite.setTextureRect(sf::Rect<int>({left,top},{width,height}));
+            idleClock.restart();
+        }
+    }
+
 }

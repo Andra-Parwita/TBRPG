@@ -19,6 +19,7 @@ Character::Character(std::string Iname, int IclassType) : name(Iname){ //input c
     this->atkAccuracy = 1;
     this->baseDmg = 5;
     sprite = new characterSpriteLoader(this->name);
+    spriteChibi = new characterSpriteLoader(this->name + "Chib");
     charInit(IclassType);
 }
 
@@ -27,24 +28,31 @@ void Character::charInit(int classType){//initalise the character
     switch (classType)
     {
     case 0: //N/A
-        this->speed = 0;
+        charClass = new CharClass;
         break;
     case 1: //knight
-        this->speed = 10;
+        charClass = new KnightClass;
         break;
     case 2: //samurai
-        this->speed = 40;
+        charClass = new RoninClass;
         break;
     case 3: //cleric
-        this->speed = 30;
+        charClass = new ClericClass;
         break;
     case 4: //mage
-        this->speed = 20;
+        charClass = new MageClass;
         break;
     default:
-        this->speed = 0;
+        charClass = new CharClass;
         break;
     }
+    this->atkAccuracy = charClass->get_atkAccuracy();
+    this->baseDmg = charClass->get_baseDmg();
+    this->critChance = charClass->get_baseDmg();
+    this->speed = charClass->get_speed();
+    this->className = charClass->get_className();
+    this->maxMp = charClass->get_maxMp();
+
     //setting limb HP
     limbs.push_back(new Limb(15, "Head")); //0
     limbs.push_back(new Limb(50, "Torso")); //1
@@ -60,11 +68,21 @@ void Character::charInit(int classType){//initalise the character
         this->maxHp = (this->maxHp + limbs[i]->getMaxHp());
     }
     this->currentHp = maxHp;
-    std::cout << "Current Hp of " << name << " is " << currentHp << " with max of " << maxHp << std::endl;
+    this->currentMp = maxMp;
+    std::cout << "Current Hp of " << name << " is " << currentHp << " with max of " << maxHp 
+    << " Class type: " << className << std::endl;
 }
 
 //destructor
 Character::~Character(){
+    delete sprite;
+    delete spriteChibi;
+    for (auto limb : limbs) {
+        delete limb;  // Make sure to delete each
+        limb = nullptr;
+    }
+    limbs.clear();  // Clear the vector to remove the now-deleted pointers
+
 }
 
 //getting
@@ -140,6 +158,19 @@ float Character::get_atkAccuracy(){
     return this->atkAccuracy;
 }
 
+int Character::get_maxMp(){
+    return this->maxMp;
+}
+
+int Character::get_currentMp(){
+    return this->currentMp;
+}
+
+int Character::get_NoOfSkills(){
+    std::cout << name << "size is: "<< charClass->skills.size() << std::endl;
+    return charClass->skills.size();
+}
+
 //setting
 
 void Character::set_limbHP(int limbId, int newHp){
@@ -179,6 +210,10 @@ void Character::set_baseDmg(int NDmg){
 
 void Character::set_atkAccuracy(float NAcc){
     this->atkAccuracy = NAcc;
+}
+
+void Character::set_currentMp(int Nmp){
+    this->currentMp = Nmp;
 }
 
 // hediffs

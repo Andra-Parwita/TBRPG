@@ -2,22 +2,29 @@
 
 BattleManager::BattleManager(Player* Nplayer) : player(Nplayer){
     srand(static_cast<unsigned>(time(NULL)));
+    canFlee = true;
     if (!player) {
         std::cerr << "Error: Player is null!" << std::endl;
         return;
     }
     initBattle();
+    attackOutcome = "N/A";
 }
 
 BattleManager::BattleManager(){
+    canFlee = true;
     srand(static_cast<unsigned>(time(NULL)));
     initBattle();
+    attackOutcome = "N/A";
 }
 
 BattleManager::~BattleManager(){
     for (auto* enemy : EnemyList) {
         delete enemy;
     }
+    EnemyList.clear();
+    std::cout << "Enemy Cleared" << std::endl;
+    battleParticipants.clear();  // Clear the vector
 }
 
 void BattleManager::initBattle(){ //call this to start battle
@@ -78,7 +85,7 @@ void BattleManager::sortSpeed(){
 }
 
 void BattleManager::enemySpawner(){ //for spawning mechanics later
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         auto* newEnemy = new Enemy(); 
         if (newEnemy) {
             EnemyList.push_back(newEnemy);
@@ -107,6 +114,7 @@ int BattleManager::check_Turns(){
     if ((hasActionTaken)) { //action turns
         battleParticipants[turnNumber]->set_currentTurn(false); //ends char turn
         std::cout << "Ended turn of: " << battleParticipants[turnNumber]->get_name() << " Turn No: " << turnNumber << " of: " << totalTurns <<std::endl;
+
         turnNumber++;
         if (turnNumber > totalTurns){
             sortSpeed(); //sorts speed based on new loop turn
@@ -144,6 +152,8 @@ void BattleManager::removeDeadEnemies() {
         battleParticipants.end());
 }
 
+//player options
+
 void BattleManager::enemyAttackChoice(int enemyChosen, int limbChosen){
     chosenEnemy = enemyChosen;
     if (EnemyList[chosenEnemy]->limbs[limbChosen]->getHp() > 0){
@@ -156,16 +166,34 @@ void BattleManager::enemyAttackChoice(int enemyChosen, int limbChosen){
     }
 }
 
+void BattleManager::flee(){
+    if (canFlee){
+        battleStatus = false;
+        EnemyList.clear();
+        battleParticipants.clear();
+    } else {
+        update_Status();
+    }
+}
+
+
+//internal
+
 void BattleManager::attackHitCalc(float targetLimbChance, int limbChosen){
     float chance = ((rand() % 101)); //without modifiers 
     chance = chance/100;
     std::cout << battleParticipants[turnNumber]->get_name() << " " << turnNumber << "\n";
     if (chance < (targetLimbChance * (1 + 1-battleParticipants[turnNumber]->get_atkAccuracy()))){
         std::cout << "\nHit by: " << battleParticipants[turnNumber]->get_name() << " Got: " << chance << " Chance: " << targetLimbChance << std::endl;
-        EnemyList[chosenEnemy]->limbs[limbChosen]->setHp(EnemyList[chosenEnemy]->limbs[limbChosen]->getHp() - battleParticipants[turnNumber]->get_baseDmg()*10); 
+
+        EnemyList[chosenEnemy]->limbs[limbChosen]->setHp(EnemyList[chosenEnemy]->limbs[limbChosen]->getHp() - battleParticipants[turnNumber]->get_baseDmg()); 
+
         std::cout << "Dealt: " << battleParticipants[turnNumber]->get_baseDmg() << " Limb Hp: "<<  EnemyList[chosenEnemy]->limbs[limbChosen]->getHp()  << "/" << 
+
         EnemyList[chosenEnemy]->limbs[limbChosen]->getMaxHp() << "\nTotal Hp: " << EnemyList[chosenEnemy]->get_Hp()<< "/" << EnemyList[chosenEnemy]->get_MaxHp() << "\n" << std::endl;
+        attackOutcome = std::to_string(battleParticipants[turnNumber]->get_baseDmg()); //animation
     } else {
+        attackOutcome = "Miss"; //displays for animation
         std::cout << "\nMiss! Got: " << chance << " Chance: " << targetLimbChance << std::endl;
     }
     int playerCharsAlive = battleParticipants.size() - EnemyList.size();
@@ -173,6 +201,7 @@ void BattleManager::attackHitCalc(float targetLimbChance, int limbChosen){
         participant->update_limbAccuracy(); //checking all party injuries
         participant->get_isAlive(); //checking for deaths
     }
+    attacked = true; // for animation
 }
 
 bool BattleManager::update_Status(){
@@ -193,6 +222,8 @@ bool BattleManager::update_Status(){
         if (playerCharsAlive <= 0 || enemyAliveNum <= 0){
             battleStatus = false;
             std::cout << "end of battle" << std::endl;
+            EnemyList.clear();
+            battleParticipants.clear();
             break;
         }
         participant->update_limbAccuracy();
@@ -223,10 +254,22 @@ void BattleManager::enemyTurn(){ //add ai difficulty types later instead of pure
 
         std::cout << battleParticipants[turnNumber]->get_name() << " Dealt: "<< battleParticipants[turnNumber]->get_baseDmg() << " To: " << battleParticipants[chosenChar]->get_name() << "\n "
         << "Limb id: "<< chosenLimb << " :" << battleParticipants[chosenChar]->get_limbHP(chosenLimb) << "/" << battleParticipants[chosenChar]->limbs[chosenLimb]->getMaxHp() << "\n";
+        attackOutcome = std::to_string(battleParticipants[turnNumber]->get_baseDmg());
     } else {
+        attackOutcome = "Miss";
         std::cout << "Enemy missed!" << std::endl;
     }
+    attacked = true;
     hasActionTaken = true;
+}
+
+
+void BattleManager::set_battleStatus(bool nStatus){
+    this->battleStatus = nStatus;
+}
+
+void BattleManager::set_canFlee(bool nFLee){
+    this->canFlee = nFLee;
 }
 
 int BattleManager::get_numOfEnemies(){
@@ -245,6 +288,18 @@ bool BattleManager::get_battleStatus(){
     return this->battleStatus;
 }
 
-void BattleManager::set_battleStatus(bool nStatus){
-    this->battleStatus = nStatus;
+bool BattleManager::get_hasActionTaken(){
+    return this->hasActionTaken;
 }
+
+bool BattleManager::get_canFlee(){
+    return this->canFlee;
+}
+
+int BattleManager::get_CharSkillListSize(){
+    std::cout << battleParticipants[turnNumber]->get_name() << std::endl;
+    return battleParticipants[turnNumber]->get_NoOfSkills();
+}
+
+bool BattleManager::get_skill_usedOnEnemy(int){}
+bool BattleManager::get_skill_limbSpecific(int){}

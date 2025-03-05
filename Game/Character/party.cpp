@@ -12,7 +12,13 @@ void Party::initParty(){
     members.push_back(new Character("Yharb",4));
 }
 
-Party::~Party(){}
+Party::~Party(){
+    for (auto character : members) {
+        delete character;  // Make sure to delete each
+        character = nullptr;
+    }
+    members.clear();  // Clear the vector to remove the now-deleted pointers
+}
 
 int Party::get_numMembers(){
     return this->numMembers;

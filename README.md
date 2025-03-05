@@ -13,8 +13,18 @@ Done:
 
 Plans:  
 
+
+Current Focus:
+- Skill mechanics (taunt, heal, fireball, slash)  
+
+Bugs:  
+- Inverted enemy selection on death of middle enemy
+- Selection of dead limbs
+- sprite errors with middle enemy death, no dmg sprite update
+
 UI  
 - Battle UI  
+  - Enemy hit char animation and indicator
 - Main Menu  
 - Inventory system  
 - Party Info  
@@ -22,12 +32,11 @@ UI
 
 - Mouse Input
 
-
 Combat:  
 - character down / death chance ~  
 - crits ~ for when weakness for weapon and armour types are implemented  
 - skills (class dependent)  
-- fleeing  
+- fleeing  (add chance mechanics)
 
 - enemy types (location dependent)
 - fixing enemy limb rendering for 64x64 sprites  

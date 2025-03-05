@@ -28,7 +28,14 @@ private:
     int enemyAliveNum;
     int skillPoints; //number of skill points
 
+    sf::Clock turnClock;
+
+    bool canFlee;
+
 public:
+    bool attacked; //animation
+    std::string attackOutcome; //animation 
+
     std::vector<Character*> battleParticipants;
     std::vector<Enemy*> EnemyList;
     BattleManager(Player*);
@@ -40,21 +47,31 @@ public:
 
     void enemySpawner();
     void enemyAttackChoice(int,int);
+    void flee();
     void removeDeadEnemies();
     void enemyTurn();
 
     void attackHitCalc(float, int);
-    void set_battleStatus(bool);
 
     void removeDeadChars();
 
-
     int check_Turns();
     bool update_Status();
+
+    void set_battleStatus(bool);
+    void set_canFlee(bool);
+
     int get_numOfEnemies();
     int get_numOfLimbs(int);
     bool get_playerTurn();
     bool get_battleStatus();
+    bool get_hasActionTaken();
+    int get_activeCharId();
+    bool get_canFlee();
+
+    int get_CharSkillListSize();
+    bool get_skill_usedOnEnemy(int);
+    bool get_skill_limbSpecific(int);
 };
 
 

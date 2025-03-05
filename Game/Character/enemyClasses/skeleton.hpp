@@ -5,9 +5,7 @@
 
 class Skeleton : public Enemy
 {
-private:
 public:
-
     Skeleton();
     ~Skeleton();
 };
