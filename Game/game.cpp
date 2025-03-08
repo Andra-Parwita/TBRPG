@@ -226,31 +226,44 @@ if (!uiManager->animationPlaying){
 }
 
 void Game::inOverworldEvents(){
-    if (this->ev.type == sf::Event::KeyPressed){
-        if ((ev.key.scancode == sf::Keyboard::Scan::W) || (ev.key.scancode == sf::Keyboard::Scan::Up)){
-            std::cout << "Move up" << std::endl;
-            overworldManager->moveCharUp(0);
-        }
-        if ((ev.key.scancode == sf::Keyboard::Scan::D) || (ev.key.scancode == sf::Keyboard::Scan::Right)){
-            std::cout << "Move right" << std::endl;
-            overworldManager->moveCharRight(0);
-        }
-        if ((ev.key.scancode == sf::Keyboard::Scan::A) || (ev.key.scancode == sf::Keyboard::Scan::Left)){
-            std::cout << "Move left" << std::endl;
-            overworldManager->moveCharLeft(0);
-        }
-        if ((ev.key.scancode == sf::Keyboard::Scan::S) || (ev.key.scancode == sf::Keyboard::Scan::Down)){
-            std::cout << "Move down" << std::endl;
-            overworldManager->moveCharDown(0);
-        }
+    float moveX = 0.f;
+    float moveY = 0.f;
+    int direction = 0;
 
-        
+    if ((activeKeys.count(sf::Keyboard::Scan::W)) || (activeKeys.count(sf::Keyboard::Scan::Up))){
+        direction = 1;
+        moveY = -10.f;
+    }
+    if ((activeKeys.count(sf::Keyboard::Scan::D)) || (activeKeys.count(sf::Keyboard::Scan::Right))){
+        direction = 4;
+        moveX = 10.f;
+    }
+    if ((activeKeys.count(sf::Keyboard::Scan::A)) || (activeKeys.count(sf::Keyboard::Scan::Left))){
+        direction = 3;
+        moveX = -10.f;
+    }
+    if ((activeKeys.count(sf::Keyboard::Scan::S)) || (activeKeys.count(sf::Keyboard::Scan::Down))){
+        direction = 2;
+        moveY = 10.f;
+    }
+    if (moveX != 0 && moveY != 0) {
+        moveX *= 0.7071f;  // Normalize diagonal speed (1/sqrt(2)) according to chatgpt
+        moveY *= 0.7071f;
+    }
+
+    if (moveX != 0 || moveY != 0){
+        overworldManager->moveChar(0,moveX,moveY,direction,window->getView().getSize());
+        overworldManager->followingCheck();
     }
 }
 
 
 void Game::pollEvents(){
     while (this->window->pollEvent(this->ev)){
+        if (this->ev.type == sf::Event::KeyPressed) {
+            activeKeys.insert(ev.key.scancode);  // Add key to set when pressed
+            std::cout << ev.key.scancode << std::endl;
+        }
 
         // windowclose
         if (this->ev.type == sf::Event::Closed){ //close window button
@@ -263,6 +276,10 @@ void Game::pollEvents(){
         //controls
         if (inBattle) {
             inBattleEvents();
+        }
+        
+        if (this->ev.type == sf::Event::KeyReleased) {
+            activeKeys.erase(ev.key.scancode);  // Remove key from set when released
         }
     }
     //outside of when an event is polled (updated with key press)
@@ -431,7 +448,7 @@ void Game::render(){ //game renders
     //overworld
     if (inOverworld){
         for (int i = 0; i < player.party.get_numMembers(); i++){
-            this->window->draw(overworldManager->charSprites[0]->characterSprite);
+            this->window->draw(overworldManager->charSprites[i]->characterSprite);
         }
     }
 

@@ -5,6 +5,7 @@
 #include <SFML/Audio.hpp>
 #include <iostream>
 #include <string>
+#include <set>
 
 #include "player.hpp"
 #include "battleManager.hpp"
@@ -41,6 +42,8 @@ class Game {
         bool CharSelectmenuBool; // (for skill / item eg, healing)
 
         //current Selection
+        std::set<sf::Keyboard::Scancode> activeKeys; //active key
+
         int currentSelectionId; //switching between selection options
         int confirmedSelection; //the confirmed selection choice
 
