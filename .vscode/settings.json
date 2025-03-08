@@ -51,6 +51,7 @@
         "algorithm": "cpp",
         "charconv": "cpp",
         "set": "cpp",
-        "iomanip": "cpp"
+        "iomanip": "cpp",
+        "deque": "cpp"
     }
 }
